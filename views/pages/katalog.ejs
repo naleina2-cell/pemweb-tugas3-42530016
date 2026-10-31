@@ -1,0 +1,66 @@
+<!-- Memanggil partial header -->
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+
+<!-- Judul Halaman Katalog -->
+<section class="page-heading">
+  <span class="eyebrow">KOLEKSI PERPUSTAKAAN</span>
+
+  <h1>Katalog Buku</h1>
+
+  <p>
+    Jelajahi daftar buku yang tersedia
+    di PustakaKita.
+  </p>
+
+  <a href="/katalog/tambah" class="button">
+    + Tambah Buku
+  </a>
+</section>
+
+<!--Daftar buku daro database MySQL-->
+<section class="grid">
+ 
+  <!-- Loop array object menggunakan EJS -->
+  <% if (daftarBuku.length === 0) { %>
+    <p>Belum ada buku dalam katalog.</p>
+
+  <% } else { %>
+    <% daftarBuku.forEach(buku => { %>
+      <article class = "card book-card">
+        <div class="book-cover">
+          📔
+        </div>
+        <span class="category">
+          <%= buku.kategori || 'Tanpa Kategori'
+          %>
+        </span>
+        <h2><%= buku.judul %></h2>
+        <p>Penulis: <%= buku.penulis %></p>
+        <p>
+          Tahun Terbit:
+          <%= buku.tahun_terbit??'-'%>
+        </p>
+        <p class="book-id">
+          ID Buku: <%=buku.id_buku %>
+        </p>
+        <a href="/katalog/edit/<%= buku.id_buku %>"
+          class="button">
+          Edit Buku
+        </a>
+        <form
+        action="/katalog/hapus/<%= buku.id_buku %>"
+        method="POST"
+        onsubmit="return confirm('yakin ingin menghapus buku ini?');"
+>
+<button type="submit" class="button">
+  Hapus Buku
+</button>
+</form>
+      </article>
+      <% }); %>
+    <% } %>/
+  
+    </section>
+
+    <!-- Memanggil partial footer -->
+<%- include('../partials/footer') %>

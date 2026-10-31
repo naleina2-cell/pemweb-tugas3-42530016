@@ -1,0 +1,60 @@
+<!-- Memanggil partial header -->
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+
+<!-- Bagian Beranda -->
+<section class="hero">
+  <span class="eyebrow">PERPUSTAKAAN DIGITAL</span>
+
+  <h1>Selamat Datang di PustakaKita</h1>
+
+  <!-- Menampilkan data dinamis dari controller -->
+  <p>Halo, <strong><%= userName %></strong>!</p>
+
+  <p>
+    Temukan berbagai koleksi buku untuk memperluas
+    wawasan dan pengetahuanmu.
+  </p>
+
+  <a href="/katalog" class="button">
+    Jelajahi Katalog →
+  </a>
+</section>
+
+<!-- Bagian Fitur Website -->
+<section class="section">
+  <h2>Kenapa PustakaKita?</h2>
+  <p>Berikut fitur yang tersedia di website kami.</p>
+
+  <div class="grid">
+
+    <!-- Loop array dari controller -->
+    <% fiturList.forEach((fitur, index) => { %>
+
+      <div class="card">
+        <span class="card-icon">📖</span>
+
+        <h3>Fitur <%= index + 1 %></h3>
+
+        <p><%= fitur %></p>
+      </div>
+
+    <% }) %>
+
+  </div>
+</section>
+
+<!-- Menampilkan jumlah buku secara dinamis -->
+<section class="highlight">
+  <h2><%= jumlahBuku %> Buku Tersedia</h2>
+
+  <p>
+    Mulai eksplorasi koleksi buku digital kami sekarang.
+  </p>
+
+  <a href="/katalog" class="button">
+    Lihat Semua Buku
+  </a>
+</section>
+
+<!-- Memanggil partial footer -->
+<%- include('../partials/footer') %>

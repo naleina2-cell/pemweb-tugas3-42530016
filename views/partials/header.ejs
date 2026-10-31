@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Judul halaman dinamis dari controller -->
+  <title><%= pageTitle %> | PustakaKita</title>
+
+  <!-- Menghubungkan file CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <nav class="navbar" aria-label="Navigasi utama">
+
+      <a href="/" class="logo">📚 PustakaKita</a>
+
+      <div class="nav-links">
+        <a href="/">Beranda</a>
+        <a href="/tentang">Tentang Kami</a>
+        <a href="/katalog">Katalog Buku</a>
+        <a href="/katalog/tambah" class="nav-button">
+          + Tambah Buku
+        </a>
+      </div>
+
+    </nav>
+  </header>
+
+  <main class="container">
