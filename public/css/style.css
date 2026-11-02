@@ -257,7 +257,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   padding: 12px;
   border: 1px solid #959595;
@@ -269,7 +270,8 @@ select {
 }
 
 input:focus,
-select:focus {
+select:focus
+textarea:focus {
   outline: 2px solid #95c8cc;
   outline-offset: 2px;
 }

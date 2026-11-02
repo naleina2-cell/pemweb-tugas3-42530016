@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXIST perpustakaan_db;
+CREATE DATABASE IF NOT EXISTS perpustakaan_db;
 USE perpustakaan_db;
 CREATE TABLE IF NOT EXISTS kategori (
     id_kategori INT AUTO_INCREMENT PRIMARY KEY,
@@ -10,6 +10,9 @@ CREATE TABLE IF NOT EXISTS buku (
     penulis VARCHAR(100) NOT NULL,
     tahun_terbit INT,
     id_kategori INT, 
+    deskripsi TEXT NULL,
+    status_buku ENUM('Tersedia', 'Dipinjam')
+    NOT NULL DEFAULT 'Tersedia',
     FOREIGN KEY (id_kategori)
     REFERENCES kategori(id_kategori)
 );

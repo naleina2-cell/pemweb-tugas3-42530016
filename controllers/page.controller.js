@@ -1,12 +1,11 @@
-const pool = require('../config/database');
+const BukuModel = require('../models/buku.model');
+const KategoriModel = require('../models/kategori.model');
 
 
 // Controller halaman Beranda
 exports.getBeranda = async (req, res) => {
   try {
-    const [rows] = await pool.execute(
-      'SELECT COUNT(*) AS jumlahBuku FROM buku'
-    );
+    const jumlahBuku = await BukuModel.getJumlah();
   res.render('pages/home', {
     pageTitle: 'Beranda',
     userName: 'Pengunjung PustakaKita',
@@ -15,7 +14,7 @@ exports.getBeranda = async (req, res) => {
       'Informasi Perpustakaan',
       'Form Tambah Buku'
     ],
-    jumlahBuku: rows[0].jumlahBuku
+    jumlahBuku: jumlahBuku
   });
 
 } catch (error) {
@@ -34,21 +33,10 @@ exports.getTentang = (req, res) => {
 // Controller halaman Katalog
 exports.getKatalog = async (req, res) => {
   try {
-    const [rows] = await pool.execute(`
-      SELECT
-      b.id_buku,
-      b.judul,
-      b.penulis,
-      b.tahun_terbit,
-      k.nama_kategori AS kategori
-    FROM buku b 
-    LEFT JOIN kategori k 
-     ON b.id_kategori = k.id_kategori
-    ORDER BY b.id_buku DESC
-      `)
+    const daftarBuku = await BukuModel.getAll();
   res.render('pages/katalog', {
     pageTitle: 'Katalog Buku',
-    daftarBuku: rows
+    daftarBuku: daftarBuku
   });
 } catch (error) {
   console.error('Gagal mengambil data buku:', error.message);
@@ -59,7 +47,7 @@ exports.getKatalog = async (req, res) => {
 // Controller halaman Form Tambah Buku
 exports.getFormTambah = async (req, res) => {
   try { 
-    const [kategoriList] = await pool.execute('SELECT id_kategori, nama_kategori FROM kategori');
+    const kategoriList = await KategoriModel.getAll();
 
   res.render('pages/tambah', {
     pageTitle: 'Tambah Buku',
@@ -74,35 +62,32 @@ exports.getFormTambah = async (req, res) => {
 // Controller HTTP POST
 exports.postTambahBuku = async (req, res) => {
   try {
-  const { judul, penulis, tahun_terbit, id_kategori } = req.body;
+  const { judul, penulis, tahun_terbit, id_kategori, deskripsi, status_buku } = req.body;
 
   const tahun = Number(tahun_terbit);
   const kategori = Number(id_kategori);
 
   if (
-    !judul?.trim() || 
-    !penulis?.trim() || 
+    typeof judul !== 'string' || !judul.trim() ||
+    typeof penulis !== 'string' || !penulis.trim() ||
     !Number.isInteger(tahun) ||
     tahun < 1 ||
     !Number.isInteger(kategori) ||
-    kategori < 1
+    kategori < 1 || (deskripsi !== undefined && !['Tersedia', 'Dipinjam'].includes(status_buku))
   ){
     return res.status(400).send('Data buku tidak valid.');
   
   }
-  const sql = `
-    INSERT INTO buku 
-    (judul, penulis, tahun_terbit, id_kategori)
-    VALUES (?, ?, ?, ?)
-  `;
+  await BukuModel.create({
+    judul: judul.trim(),
+    penulis: penulis.trim(),
+    tahun_terbit: tahun,
+    id_kategori: kategori,
+    deskripsi: deskripsi?.trim() || null,
+    status_buku: status_buku || 'Tersedia'
+  });
+  return res.redirect('/katalog');
 
-  await pool.execute(sql, [
-    judul.trim(),
-    penulis.trim(),
-    tahun,
-    kategori
-  ]);
-  res.redirect('/katalog');
 } catch (error) {
   console.error('Gagal menambah buku:', error.message);
   res.status(500).send('Gagal menyimpan buku.');
@@ -114,18 +99,14 @@ exports.postTambahBuku = async (req, res) => {
     if (!Number.isInteger(id) || id < 1) {
       return res.status(400).send('ID buku tidak valid.');
     }
-    const [rows] = await pool.execute(
-      'SELECT * FROM buku WHERE id_buku = ?',
-      [id]
-    );
-    if (rows.length === 0) {
+    const buku = await BukuModel.getById(id);
+    if (!buku) {
       return res.status(404).send('Buku tidak ditemukan.');
     }
-    const [kategoriList] = await pool.execute(
-      'SELECT id_kategori, nama_kategori FROM kategori');
+    const kategoriList = await KategoriModel.getAll();
       res.render('pages/edit', {
         pageTitle: 'Edit Buku', 
-        buku: rows[0],
+        buku: buku,
         kategoriList: kategoriList
       });
   } catch (error) {
@@ -136,7 +117,7 @@ exports.postTambahBuku = async (req, res) => {
  exports.postEditBuku = async (req, res) => {
   try{
     const id = Number(req.params.id);
-    const { judul, penulis, tahun_terbit, id_kategori} = req.body;
+    const { judul, penulis, tahun_terbit, id_kategori, deskripsi, status_buku } = req.body;
 
     const tahun = Number(tahun_terbit);
     const kategori = Number(id_kategori);
@@ -146,44 +127,68 @@ exports.postTambahBuku = async (req, res) => {
       typeof judul !== 'string' || !judul.trim() ||
       typeof penulis !== 'string' || !penulis.trim() ||
       !Number.isInteger(tahun) || tahun < 1 || tahun > 2100 ||
-      !Number.isInteger(kategori) || kategori < 1
-    ) {
+      !Number.isInteger(kategori) || kategori < 1 ||(deskripsi !== undefined && typeof deskripsi !== 'string') ||
+      (status_buku !== undefined && !['Tersedia', 'Dipinjam'].includes(status_buku)
+      )) {
       return res.status(400).send('Data buku tidak valid.');
     }
-    const sql = `UPDATE buku
-    SET judul = ?, penulis = ?, tahun_terbit = ?, id_kategori = ?
-    WHERE id_buku = ?`;
-    await pool.execute(sql, [
-      judul.trim(),
-      penulis.trim(),
-      tahun,
-      kategori,
-      id
-    ]);
-    res.redirect('/katalog');
-  
+    const result = await BukuModel.update(id, {
+      judul: judul.trim(),
+      penulis: penulis.trim(),
+      tahun_terbit: tahun,
+      id_kategori: kategori,
+      deskripsi: deskripsi?.trim() || null,
+      status_buku: status_buku || 'Tersedia'
+    });
+    
+   if (result.affectedRows === 0) {
+
+      return res.status(404).send('Buku tidak ditemukan.');
+
+    }
+
+    return res.redirect('/katalog');
 
   } catch (error) {
+
     console.error('Gagal mengedit buku:', error.message);
-    res.status(500).send('Gagal menyimpan perubahan buku.');
+
+    return res.status(500).send('Gagal menyimpan perubahan buku.');
+
   }
- };
- exports.postHapusBuku = async (req, res) => {
-  try{
+
+};
+
+// Controller HTTP POST - Hapus Buku
+
+exports.postHapusBuku = async (req, res) => {
+
+  try {
+
     const id = Number(req.params.id);
-    if(!Number.isInteger(id) || id < 1) {
+
+    if (!Number.isInteger(id) || id < 1) {
+
       return res.status(400).send('ID buku tidak valid.');
+
     }
-    const [result] = await pool.execute(
-      'DELETE FROM buku WHERE id_buku = ?',
-      [id]
-    );
-    if (result.affectedRows ===0) {
+
+    const result = await BukuModel.delete(id);
+
+    if (result.affectedRows === 0) {
+
       return res.status(404).send('Buku tidak ditemukan.');
+
     }
+
     return res.redirect('/katalog');
+
   } catch (error) {
+
     console.error('Gagal menghapus buku:', error.message);
+
     return res.status(500).send('Gagal menghapus buku.');
+
   }
- };
+
+}

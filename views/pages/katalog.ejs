@@ -43,6 +43,8 @@
         <p class="book-id">
           ID Buku: <%=buku.id_buku %>
         </p>
+        <p>Deskripsi:<%= buku.deskripsi || '-' %></p>
+        <p>Status: <strong><%= buku.status_buku || 'Tersedia'%></strong></p>
         <a href="/katalog/edit/<%= buku.id_buku %>"
           class="button">
           Edit Buku
