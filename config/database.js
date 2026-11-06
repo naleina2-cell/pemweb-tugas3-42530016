@@ -1,5 +1,5 @@
 require('dotenv').config();
-const myqsl = require('mysql2/promise')
+const myqsl = require('mysql2');
 
 const pool = myqsl.createPool({
     host: process.env.DB_HOST,
@@ -10,4 +10,4 @@ const pool = myqsl.createPool({
     connectionLimit: 10,
     queueLimit:0
 });
-module.exports = pool;  
+module.exports = pool.promise();  
