@@ -61,10 +61,10 @@ Node.js, Express.js, EJS, dan MySQL.
 
 ## Video Penjelasan
 
-YouTube: [Tautan video akan ditambahkan]
+YouTube: https://youtu.be/-Ayosnf94gs?si=Fh6fbXEaulQWAOW6
 
 ## Identitas
-Nama: [Nama lengkap mahasiswa]
-NIM: [NIM mahasiswa]
-Kelas: [Kelas mahasiswa]
-Tema: Perpustakaan Digital
+Nama: Angelina Sastra Guna
+NIM: 42530016
+Kelas: TI pagi
+Tema: Perpustakaan Digital (B)
